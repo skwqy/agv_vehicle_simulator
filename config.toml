@@ -9,9 +9,6 @@ max_frame_length = 65536
 uplink_has_crc = true
 reconnect_enabled = true
 reconnect_interval_ms = 5000
-# FV2 agvId / agvIds — wire id for StatusMsg (multi-vehicle: base + index or explicit list)
-agv_id = 2
-# agv_ids = [1, 2, 3]
 
 [vehicle]
 serial_number = "Vehicle_"
@@ -30,7 +27,8 @@ apply_stripping = true
 point_prefix = "Point_"
 path_prefix = "Path_"
 
-# Shared layout with vda5050_vehicle_simulator: fleet size, serial suffix, log rotation, optional map_id.
+# Fleet: robot_count vehicles. serial_suffix_start + robot_index → serial suffix and protobuf agv_id
+# (e.g. Vehicle_2 / agv_id 2, Vehicle_3 / agv_id 3, …).
 [settings]
 robot_count = 1
 serial_suffix_start = 2

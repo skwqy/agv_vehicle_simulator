@@ -55,6 +55,7 @@ async fn run_session(
     engine: Arc<Mutex<VehicleSimulator>>,
     cfg: Arc<Config>,
     vehicle_tag: &str,
+    vehicle_log_target: &str,
 ) -> std::io::Result<()> {
     let uplink_crc = cfg.socket.uplink_has_crc;
     let max_frame = cfg.socket.max_frame_length;
@@ -73,8 +74,8 @@ async fn run_session(
         engine.lock().await.after_status_published();
     }
     info!(
-        target: "socket",
-        "[{}] sent initial StatusMsg after connect",
+        target: vehicle_log_target,
+        "[{}] AGV -> MC (StatusMsg): initial after connect",
         vehicle_tag
     );
 
@@ -130,6 +131,12 @@ async fn run_session(
             }
             let short = to_short_type_name(&full_type_name);
             let normalized = normalize_downlink_suffix(&short);
+            info!(
+                target: vehicle_log_target,
+                "[{}] MC -> AGV ({}): received",
+                vehicle_tag,
+                short
+            );
             let replies = {
                 let mut eng = engine.lock().await;
                 eng.handle_downlink(&normalized, &protobuf)
@@ -139,6 +146,12 @@ async fn run_session(
                 for (msg_type, payload) in replies {
                     let b = wrap(&msg_type, &payload);
                     write_tcp_frame(&mut *w, &b).await?;
+                    info!(
+                        target: vehicle_log_target,
+                        "[{}] AGV -> MC ({}): sent",
+                        vehicle_tag,
+                        msg_type
+                    );
                 }
             }
             let mut eng = engine.lock().await;
@@ -150,6 +163,11 @@ async fn run_session(
                 write_tcp_frame(&mut *w, &b).await?;
                 drop(w);
                 engine.lock().await.after_status_published();
+                info!(
+                    target: vehicle_log_target,
+                    "[{}] AGV -> MC (StatusMsg): sent (after downlink)",
+                    vehicle_tag
+                );
             }
         }
     }
@@ -247,15 +265,8 @@ pub async fn connection_loop(
         let cfg_c = Arc::clone(&cfg);
         let serial = cfg.vehicle.serial_number.as_str();
         info!(
-            target: "socket",
-            "CONNECTED — serial_number={} agv_id={} server={} (TCP to scheduler, protobuf framing)",
-            serial,
-            agv_id,
-            addr
-        );
-        info!(
             target: log_target.as_str(),
-            "CONNECTED — serial_number={} agv_id={} server={}",
+            "CONNECTED — serial_number={} agv_id={} server={} (TCP to scheduler, protobuf framing)",
             serial,
             agv_id,
             addr
@@ -266,17 +277,18 @@ pub async fn connection_loop(
             Arc::clone(&engine),
             cfg_c,
             vehicle_tag.as_str(),
+            log_target.as_str(),
         )
         .await
         {
             Ok(()) => info!(
-                target: "socket",
+                target: log_target.as_str(),
                 "[{}] DISCONNECTED — scheduler closed TCP session (was connected to {})",
                 vehicle_tag,
                 addr
             ),
             Err(e) => warn!(
-                target: "socket",
+                target: log_target.as_str(),
                 "[{}] DISCONNECTED — session error from {}: {e}",
                 vehicle_tag,
                 addr

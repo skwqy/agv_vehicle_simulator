@@ -27,13 +27,11 @@ pub fn get_config() -> Config {
     })
 }
 
-/// PLC / FV2: vehicle id on the wire (`StatusMsg.agv_id`). Matches FV2 `agvId` / `agvIds`.
+/// Wire vehicle id for protobuf (`StatusMsg.agv_id`, `AckMsg`, …).
+///
+/// Same rule as the serial suffix in `main`: `settings.serial_suffix_start + robot_index`.
 pub fn agv_id_for_robot(config: &Config, robot_index: u32) -> i32 {
-    if let Some(&id) = config.socket.agv_ids.get(robot_index as usize) {
-        id
-    } else {
-        config.socket.agv_id + robot_index as i32
-    }
+    (config.settings.serial_suffix_start + robot_index) as i32
 }
 
 fn default_connect_timeout_ms() -> u64 {
@@ -56,10 +54,6 @@ fn default_reconnect_interval_ms() -> u64 {
     5000
 }
 
-fn default_agv_id() -> i32 {
-    2
-}
-
 /// TCP to YFAOS `AgvSocketServer` (FV2 `SocketPlcBridge`).
 #[derive(Deserialize, Clone)]
 #[serde(default)]
@@ -79,12 +73,6 @@ pub struct SocketConfig {
     pub reconnect_enabled: bool,
     #[serde(default = "default_reconnect_interval_ms")]
     pub reconnect_interval_ms: u64,
-    /// FV2 `agvId` — base id when `settings.robot_count` is 1 or when indexing multi-vehicle.
-    #[serde(default = "default_agv_id")]
-    pub agv_id: i32,
-    /// FV2 `agvIds` — if non-empty, `agv_ids[i]` is used for robot index `i`.
-    #[serde(default)]
-    pub agv_ids: Vec<i32>,
 }
 
 impl Default for SocketConfig {
@@ -98,8 +86,6 @@ impl Default for SocketConfig {
             uplink_has_crc: default_uplink_has_crc(),
             reconnect_enabled: default_reconnect_enabled(),
             reconnect_interval_ms: default_reconnect_interval_ms(),
-            agv_id: default_agv_id(),
-            agv_ids: Vec::new(),
         }
     }
 }

@@ -334,7 +334,7 @@ impl PlcProtobufEngine {
             _ => {
                 warn!(
                     target: self.lt(),
-                    "Unhandled protobuf downlink type: {}",
+                    "MC -> AGV: unhandled protobuf downlink type: {}",
                     normalized_suffix
                 );
             }

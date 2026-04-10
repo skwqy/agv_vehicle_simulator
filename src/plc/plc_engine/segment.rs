@@ -17,7 +17,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<Vec<
         eng.moving = false;
         warn!(
             target: eng.lt(),
-            "SegmentMsg empty segments, frame={}",
+            "MC -> AGV (SegmentMsg): empty segments, frame={}",
             msg.frame_id
         );
         return Some(vec![("AckMsg".into(), encode::ack(eng.agv_id, msg.frame_id))]);
@@ -29,7 +29,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<Vec<
     if eng.try_start_route(&incoming) {
         info!(
             target: eng.lt(),
-            "SegmentMsg plant route segments={:?} targetPoint={} frame={}",
+            "MC -> AGV (SegmentMsg): plant route segments={:?} targetPoint={} frame={}",
             incoming,
             eng.target_point,
             msg.frame_id
@@ -39,7 +39,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<Vec<
         eng.fallback_remaining_s = (eng.pb().segment_travel_ms as f32) / 1000.0;
         info!(
             target: eng.lt(),
-            "SegmentMsg fallback timer segments={:?} targetPoint={} frame={}",
+            "MC -> AGV (SegmentMsg): fallback timer segments={:?} targetPoint={} frame={}",
             incoming,
             eng.target_point,
             msg.frame_id

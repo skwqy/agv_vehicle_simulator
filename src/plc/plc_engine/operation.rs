@@ -12,7 +12,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<Vec<
     eng.operation_result = 1;
     info!(
         target: eng.lt(),
-        "OperationMsg frame={} op={}",
+        "MC -> AGV (OperationMsg): frame={} op={}",
         msg.frame_id,
         msg.op_code
     );

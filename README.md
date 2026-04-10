@@ -8,7 +8,7 @@ Configuration is via **`config.toml`**. Multiple vehicles share one process (`[s
 
 - TCP + length-prefixed protobuf frames (CRC optional on uplink body).
 - Optional **OpenTCS plant XML** for initial pose and segment-based routes (`[map]`).
-- **Multi-vehicle**: distinct `agv_id` / serial per instance.
+- **Multi-vehicle**: distinct wire `agv_id` and serial per instance (`serial_suffix_start + robot_index`).
 - Per-vehicle rolling file logs under `logs/<serial>/`; see [Logging](#logging).
 
 ## Source layout: PLC simulation (`src/plc`)
@@ -51,8 +51,6 @@ max_frame_length = 65536
 uplink_has_crc = true
 reconnect_enabled = true
 reconnect_interval_ms = 5000
-agv_id = 2
-# agv_ids = [1, 2, 3]   # optional explicit id per robot index
 
 [vehicle]
 serial_number = "Vehicle_"
@@ -94,7 +92,7 @@ initial_heading_deg = 0.0
 
 ### `[socket]`
 
-Scheduler **host/port**, frame limits, **uplink CRC**, reconnect behaviour, and **wire AGV id** (`agv_id` or per-index `agv_ids` for multi-vehicle).
+Scheduler **host/port**, frame limits, **uplink CRC**, and reconnect behaviour. Protobuf **`agv_id`** is not configured here; it follows **`[settings] serial_suffix_start + robot_index`** (same number as the serial suffix after `serial_number`).
 
 ### `[vehicle]`
 
@@ -106,7 +104,7 @@ OpenTCS XML path, layout scale/flip, simulation time step, optional **initial po
 
 ### `[settings]`
 
-Fleet size (`robot_count`), serial suffix base, optional `map_id` (reserved for shared configs), and log rotation (`log_max_file_bytes`, `log_max_files`).
+Fleet size (`robot_count`), **`serial_suffix_start`** (first serial suffix and protobuf **`agv_id`** for robot 0; robot *i* uses `serial_suffix_start + i`), optional `map_id` (reserved for shared configs), and log rotation (`log_max_file_bytes`, `log_max_files`).
 
 ### `[simulation]`
 

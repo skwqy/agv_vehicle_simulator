@@ -18,7 +18,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<Vec<
     let out = vec![("AckMsg".into(), encode::ack(eng.agv_id, msg.frame_id))];
     info!(
         target: eng.lt(),
-        "NewTaskMsg taskId={} targetPoint={} frame={}",
+        "MC -> AGV (NewTaskMsg): taskId={} targetPoint={} frame={}",
         eng.task_id,
         eng.target_point,
         msg.frame_id

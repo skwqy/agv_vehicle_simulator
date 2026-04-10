@@ -11,7 +11,7 @@ pub(super) fn handle(eng: &mut PlcProtobufEngine, payload: &[u8]) -> Option<()> 
     eng.host_estop = msg.estop_status == EstopStatus::Activateestop as i32;
     info!(
         target: eng.lt(),
-        "EstopMsg activate={}",
+        "MC -> AGV (EstopMsg): activate={}",
         eng.host_estop
     );
     Some(())
